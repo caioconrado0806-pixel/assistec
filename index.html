@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA FATEC</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --red: #B22222;
+    --red-soft: #d0453f;
+    --bg: #1c1b1a;
+    --surface: #262524;
+    --surface-2: #302f2d;
+    --border: rgba(255, 255, 255, 0.10);
+    --text: #ecebe8;
+    --muted: #9c9a95;
+    --ok: #5fbf7f;
+    --warn: #e2b54a;
+    --bad: #e2675e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---------- Topo ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
+  .badge {
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding: 4px 9px;
+    border-radius: 6px;
+  }
+  .top-actions { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.85rem; }
+  .ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .ghost:hover { background: var(--surface); }
+
+  /* ---------- Área central ---------- */
+  main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* Tela de boas-vindas */
+  #welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 8vh;
+  }
+  .spark { color: var(--red-soft); font-size: 1.6rem; margin-bottom: 14px; }
+  #welcome h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  #welcome p { color: var(--muted); margin-bottom: 26px; }
+  #welcome .composer-slot { width: 100%; }
+
+  /* Conversa */
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+    gap: 22px;
+    padding: 20px 0 24px;
+    scroll-behavior: smooth;
+  }
+  body.chatting #welcome { display: none; }
+  body.chatting #chat { display: flex; }
+  body:not(.chatting) .bottom-slot { display: none; }
+
+  .msg { animation: fadeIn 0.25s ease; line-height: 1.65; font-size: 0.97rem; }
+  .msg.user {
+    align-self: flex-end;
+    background: var(--surface-2);
+    padding: 10px 15px;
+    border-radius: 16px;
+    max-width: 80%;
+    overflow-wrap: anywhere;
+  }
+  .msg.bot { display: flex; gap: 12px; align-items: flex-start; }
+  .msg.bot .who {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--red);
+    display: grid;
+    place-items: center;
+    font-size: 0.75rem;
+    margin-top: 2px;
+  }
+  .msg.bot .content { min-width: 0; flex: 1; }
+  .content p + p, .content p + .table-wrap, .content .table-wrap + p, .content ul { margin-top: 10px; }
+  .content ul { padding-left: 20px; }
+  .content b { font-weight: 600; color: #fff; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  th { color: var(--muted); font-weight: 500; font-size: 0.75rem; background: var(--surface); }
+
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 0.74rem; font-weight: 500; }
+  .tag.ok { background: rgba(95, 191, 127, 0.14); color: var(--ok); }
+  .tag.warn { background: rgba(226, 181, 74, 0.14); color: var(--warn); }
+  .tag.bad { background: rgba(226, 103, 94, 0.14); color: var(--bad); }
+
+  .bar { height: 5px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-top: 4px; min-width: 70px; }
+  .bar > span { display: block; height: 100%; }
+
+  .typing span {
+    display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%;
+    background: var(--muted); animation: blink 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ---------- Caixa de mensagem ---------- */
+  .bottom-slot { padding: 0 0 14px; flex-shrink: 0; }
+
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 12px 12px 10px 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    text-align: left;
+  }
+  .composer:focus-within { border-color: rgba(255, 255, 255, 0.22); }
+  #input {
+    width: 100%;
+    resize: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    max-height: 200px;
+  }
+  #input::placeholder { color: var(--muted); }
+  .composer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .hint { color: var(--muted); font-size: 0.75rem; }
+  #send {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 10px;
+    background: var(--red);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  #send:disabled { opacity: 0.35; cursor: default; }
+
+  #chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+  .chip {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 7px 13px;
+    font: inherit;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+  .chip i { color: var(--muted); margin-right: 6px; }
+  .chip:hover { background: var(--surface); }
+
+  .footnote { text-align: center; color: var(--muted); font-size: 0.72rem; margin-top: 10px; }
+
+  #chips { max-height: 38vh; overflow-y: auto; padding: 2px; }
+  .chip.ver-mais { border-style: dashed; color: var(--muted); }
+  /* ---------- Barra do professor (final da página) ---------- */
+  .prof-bar { display: flex; justify-content: center; gap: 8px; padding: 4px 16px 12px; flex-shrink: 0; }
+  .prof-bar .ghost { color: var(--muted); }
+  .prof-bar .ghost i { margin-right: 6px; }
+
+  /* ---------- Painel do professor ---------- */
+  .painel { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; }
+  .painel[hidden] { display: none; }
+  .painel-head { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .painel-head .titulos { flex: 1; min-width: 0; }
+  .painel-head h2 { font-size: 1rem; font-weight: 600; }
+  .painel-head small { color: var(--muted); font-size: 0.78rem; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; flex-shrink: 0; }
+  .icon-btn:hover { background: var(--surface); }
+  .painel-body { flex: 1; overflow-y: auto; }
+  .painel-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; }
+  .painel-foot { border-top: 1px solid var(--border); flex-shrink: 0; }
+  .painel-foot[hidden] { display: none; }
+  .painel-foot .painel-inner { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .contagem { color: var(--muted); font-size: 0.85rem; }
+  .primary { background: var(--red); color: #fff; border: none; border-radius: 10px; padding: 9px 16px; font: inherit; font-weight: 500; font-size: 0.88rem; cursor: pointer; }
+  .primary:disabled { opacity: 0.5; cursor: default; }
+
+  .opcoes { display: flex; flex-direction: column; gap: 8px; }
+  .opcao { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font: inherit; cursor: pointer; }
+  .opcao:hover { border-color: rgba(255, 255, 255, 0.22); }
+  .opcao .ic { width: 36px; height: 36px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; color: var(--red-soft); flex-shrink: 0; }
+  .opcao .txt { flex: 1; min-width: 0; }
+  .opcao b { display: block; font-weight: 600; font-size: 0.95rem; }
+  .opcao small { color: var(--muted); font-size: 0.8rem; }
+  .opcao .fa-chevron-right { color: var(--muted); }
+
+  .campos { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .campos.um { grid-template-columns: 1fr; }
+  .campo { display: flex; flex-direction: column; gap: 5px; font-size: 0.75rem; color: var(--muted); }
+  .campo select, .campo input { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 0.9rem; color-scheme: dark; min-width: 0; }
+  .linha-acoes { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--muted); font-size: 0.8rem; }
+  .aviso { background: rgba(226, 181, 74, 0.10); color: var(--warn); border-radius: 9px; padding: 9px 12px; font-size: 0.82rem; margin-bottom: 12px; }
+  .aviso[hidden] { display: none; }
+
+  .alunos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; }
+  .aluno-btn { text-align: left; background: var(--surface); border: 1px solid rgba(95, 191, 127, 0.35); border-radius: 12px; padding: 11px 12px; color: var(--text); font: inherit; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  .aluno-btn b { display: block; font-size: 0.88rem; font-weight: 600; }
+  .aluno-btn .st { font-size: 0.75rem; color: var(--ok); }
+  .aluno-btn small { display: block; color: var(--muted); font-size: 0.72rem; margin-top: 3px; }
+  .aluno-btn.falta { background: rgba(226, 103, 94, 0.14); border-color: var(--bad); }
+  .aluno-btn.falta .st { color: var(--bad); }
+
+  .nota-in { width: 64px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 6px 8px; font: inherit; font-size: 0.86rem; }
+  .nota-in.erro { border-color: var(--bad); }
+
+  .login { max-width: 320px; margin: 8vh auto 0; text-align: center; }
+  .login h3 { font-weight: 600; font-size: 1.05rem; }
+  .login p { color: var(--muted); font-size: 0.88rem; margin: 6px 0 18px; }
+  .login input { width: 100%; text-align: center; letter-spacing: 6px; font: inherit; font-size: 1.2rem; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 11px; margin-bottom: 10px; }
+  .login .primary { width: 100%; }
+  .login .erro-txt { color: var(--bad); font-size: 0.82rem; min-height: 1.2em; margin-top: 8px; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--surface-2); border: 1px solid var(--border); padding: 10px 16px; border-radius: 10px; font-size: 0.86rem; z-index: 60; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); max-width: calc(100% - 32px); }
+  .toast.ok i { color: var(--ok); }
+  .toast.warn i { color: var(--warn); }
+  .toast.bad i { color: var(--bad); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+
+  @media (max-width: 560px) {
+    header { padding: 10px 16px; }
+    .top-actions .name { display: none; }
+    .hint { display: none; }
+    .msg.user { max-width: 90%; }
+    .campos { grid-template-columns: 1fr 1fr; }
+    .campos .campo:first-child { grid-column: 1 / -1; }
+    .painel-head { padding: 10px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="badge">FATEC</span> IA Taquaritinga</div>
+  <div class="top-actions" id="topActions" hidden>
+    <span class="name" id="userName"></span>
+    <button class="ghost" id="newChat" type="button"><i class="fa-regular fa-pen-to-square"></i> Nova conversa</button>
+    <button class="ghost" id="logout" type="button" title="Trocar de aluno"><i class="fa-solid fa-right-from-bracket"></i></button>
+  </div>
+</header>
+
+<main>
+  <section id="welcome">
+    <div class="spark"><i class="fa-solid fa-asterisk"></i></div>
+    <h1 id="welcomeTitle">Olá! Qual é o seu nome?</h1>
+    <p id="welcomeSub">Assim eu encontro suas informações acadêmicas.</p>
+    <div class="composer-slot" id="topSlot"></div>
+    <div id="chips"></div>
+  </section>
+
+  <div id="chat" aria-live="polite"></div>
+
+  <div class="bottom-slot" id="bottomSlot"></div>
+
+  <!-- A caixa de mensagem é movida entre a tela inicial e o rodapé da conversa -->
+  <div class="composer" id="composer">
+    <textarea id="input" rows="1" placeholder="Digite seu nome..." aria-label="Mensagem"></textarea>
+    <div class="composer-row">
+      <span class="hint">Enter para enviar · Shift+Enter para nova linha</span>
+      <button id="send" type="button" aria-label="Enviar" disabled><i class="fa-solid fa-arrow-up"></i></button>
+    </div>
+  </div>
+</main>
+
+<footer class="prof-bar">
+  <button class="ghost" id="btnEditarNotas" type="button"><i class="fa-solid fa-pen"></i>Editar notas</button>
+  <button class="ghost" id="btnEditarFreq" type="button"><i class="fa-solid fa-clipboard-user"></i>Editar frequência</button>
+</footer>
+
+<!-- Painel do professor: turmas, chamada e notas -->
+<div class="painel" id="painel" hidden role="dialog" aria-modal="true" aria-labelledby="painelTitulo">
+  <div class="painel-head">
+    <button class="icon-btn" id="painelVoltar" type="button" aria-label="Voltar"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="titulos"><h2 id="painelTitulo"></h2><small id="painelSub"></small></div>
+    <button class="icon-btn" id="painelFechar" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="painel-body" id="painelScroll"><div class="painel-inner" id="painelBody"></div></div>
+  <div class="painel-foot" id="painelFootWrap" hidden><div class="painel-inner" id="painelFoot"></div></div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO
+   llmEndpoint: se preenchido, as perguntas vão para o seu backend,
+   que chama um LLM com os dados do aluno. Vazio ou com erro, o
+   motor local abaixo responde.
+   Contrato: POST { ra, message, history } -> { reply: "texto" }
+   apiBase: endereço do server.js ("" = mesmo servidor que serve a página).
+   pinLocal: PIN usado só quando o servidor está offline.
+   ========================================================= */
+const CONFIG = {
+  llmEndpoint: "", mediaMinima: 6, frequenciaMinima: 75, totalAlunos: 50, paginasNomes: 3,
+  apiBase: "", pinLocal: "1234"
+};
+
+/* =========================================================
+   BASE DE DADOS (demo)
+   ========================================================= */
+const DB = {
+  "1234567": {
+    nome: "Ana Souza",
+    curso: "Desenvolvimento de Software Multiplataforma",
+    semestre: 4,
+    periodo: "Noite",
+    disciplinas: [
+      { nome: "Desenvolvimento Web III", prof: "Prof. Ricardo", p1: 8.5, p2: 9.0, aulas: 80, faltas: 6, apelidos: ["web", "web 3", "web iii", "dev web"] },
+      { nome: "Estrutura de Dados", prof: "Prof. Alexandre", p1: 7.0, p2: 8.0, aulas: 80, faltas: 10, apelidos: ["estrutura", "ed"] },
+      { nome: "Engenharia de Software", prof: "Profa. Ana", p1: 6.5, p2: null, aulas: 80, faltas: 16, apelidos: ["engenharia", "eng software", "es"] },
+      { nome: "Banco de Dados Relacional", prof: "Prof. Carlos", p1: 9.5, p2: 9.0, aulas: 80, faltas: 3, apelidos: ["banco", "banco de dados", "bd", "sql"] },
+      { nome: "Interação Humano-Computador", prof: "Profa. Marina", p1: 4.5, p2: null, aulas: 40, faltas: 9, apelidos: ["ihc", "interacao", "ux"] }
+    ]
+  },
+  "7654321": {
+    nome: "Lucas Pereira",
+    curso: "Agronegócio",
+    semestre: 2,
+    periodo: "Manhã",
+    disciplinas: [
+      { nome: "Gestão Agroindustrial", prof: "Prof. Marcos", p1: 7.5, p2: 6.0, aulas: 80, faltas: 12, apelidos: ["gestao", "agroindustrial"] },
+      { nome: "Estatística Aplicada", prof: "Profa. Helena", p1: 5.0, p2: 5.5, aulas: 80, faltas: 8, apelidos: ["estatistica"] },
+      { nome: "Comercialização Agrícola", prof: "Prof. Rafael", p1: 8.0, p2: 7.5, aulas: 40, faltas: 12, apelidos: ["comercializacao", "comercio"] }
+    ]
+  }
+};
+
+/* Alunos de demonstração com nomes comuns do Brasil */
+const PRIMEIROS = ["Maria","José","João","Ana","Francisco","Antônio","Carlos","Paulo","Pedro","Lucas",
+  "Luiz","Marcos","Luís","Gabriel","Rafael","Daniel","Marcelo","Bruno","Eduardo","Felipe",
+  "Juliana","Fernanda","Patrícia","Aline","Camila","Amanda","Bruna","Jéssica","Letícia","Júlia",
+  "Beatriz","Larissa","Mariana","Gabriela","Vanessa","Rodrigo","Gustavo","Matheus","Thiago","Leonardo"];
+const SOBRENOMES = ["Silva","Santos","Oliveira","Souza","Rodrigues","Ferreira","Alves","Pereira","Lima","Gomes",
+  "Costa","Ribeiro","Martins","Carvalho","Almeida","Lopes","Soares","Fernandes","Vieira","Barbosa"];
+
+const GRADES = {
+  "Desenvolvimento de Software Multiplataforma": [
+    ["Desenvolvimento Web III", "Prof. Ricardo", 80, ["web", "web 3", "web iii", "dev web"]],
+    ["Estrutura de Dados", "Prof. Alexandre", 80, ["estrutura", "ed"]],
+    ["Engenharia de Software", "Profa. Ana", 80, ["engenharia", "eng software", "es"]],
+    ["Banco de Dados Relacional", "Prof. Carlos", 80, ["banco", "banco de dados", "bd", "sql"]],
+    ["Interação Humano-Computador", "Profa. Marina", 40, ["ihc", "interacao", "ux"]]
+  ],
+  "Agronegócio": [
+    ["Gestão Agroindustrial", "Prof. Marcos", 80, ["gestao", "agroindustrial"]],
+    ["Estatística Aplicada", "Profa. Helena", 80, ["estatistica"]],
+    ["Comercialização Agrícola", "Prof. Rafael", 40, ["comercializacao", "comercio"]]
+  ]
+};
+
+(function gerarAlunos() {
+  let seed = 42;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  const nota = () => Math.round((3 + rnd() * 7) * 2) / 2;
+  const cursos = Object.keys(GRADES);
+  const existentes = new Set(Object.values(DB).map((a) => a.nome));
+
+  for (let i = 0; Object.keys(DB).length < CONFIG.totalAlunos; i++) {
+    const nome = PRIMEIROS[i % 40] + " " + SOBRENOMES[(i * 3 + Math.floor(i / 40)) % 20];
+    if (existentes.has(nome)) continue;
+    existentes.add(nome);
+    const curso = cursos[i % cursos.length];
+    DB[String(2000000 + i * 137)] = {
+      nome, curso,
+      semestre: 1 + Math.floor(rnd() * 6),
+      periodo: ["Manhã", "Tarde", "Noite"][Math.floor(rnd() * 3)],
+      disciplinas: GRADES[curso].map(([n, prof, aulas, apelidos]) => ({
+        nome: n, prof, aulas, apelidos,
+        p1: nota(),
+        p2: rnd() < 0.3 ? null : nota(),
+        faltas: Math.floor(rnd() * aulas * 0.3)
+      }))
+    };
+  }
+})();
+
+/* Turmas AMS: cada ano tem 2 semestres (1º e 2º semestre = 1º ano, ...).
+   Os valores "Base" guardam o estado original; chamadas e notas salvas são aplicadas por cima. */
+const SIGLA_CURSO = { "Desenvolvimento de Software Multiplataforma": "DS", "Agronegócio": "AGRO" };
+for (const a of Object.values(DB)) {
+  a.turma = `${Math.ceil(a.semestre / 2)}º ano AMS ${SIGLA_CURSO[a.curso]}`;
+  for (const d of a.disciplinas) Object.assign(d, { faltasBase: d.faltas, p1Base: d.p1, p2Base: d.p2 });
+}
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+const $ = (s) => document.querySelector(s);
+const chatEl = $("#chat"), chipsEl = $("#chips"), inputEl = $("#input"), sendEl = $("#send"), composerEl = $("#composer");
+
+const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n) => (n === null || n === undefined ? "--" : n.toFixed(1).replace(".", ","));
+const has = (text, words) => words.some((w) => new RegExp("\\b" + w + "\\b").test(text));
+const firstName = (nome) => nome.split(" ")[0];
+
+function saudacaoHora() {
+  const h = new Date().getHours();
+  return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+}
+
+/* Cálculos acadêmicos */
+function calc(d) {
+  const freq = Math.max(0, ((d.aulas - d.faltas) / d.aulas) * 100);
+  const limiteFaltas = Math.floor(d.aulas * (1 - CONFIG.frequenciaMinima / 100));
+  const media = d.p1 === null || d.p2 === null ? null : (d.p1 + d.p2) / 2;
+  let status, cls;
+  if (freq < CONFIG.frequenciaMinima) { status = "Reprovado por falta"; cls = "bad"; }
+  else if (media === null) {
+    const risco = d.p1 < CONFIG.mediaMinima || d.faltas > limiteFaltas * 0.8;
+    status = risco ? "Em andamento · atenção" : "Em andamento"; cls = "warn";
+  }
+  else if (media >= CONFIG.mediaMinima) { status = "Aprovado"; cls = "ok"; }
+  else { status = "Reprovado por nota"; cls = "bad"; }
+  return { freq, limiteFaltas, restantes: limiteFaltas - d.faltas, media, status, cls };
+}
+
+const tag = (c) => `<span class="tag ${c.cls}">${c.status}</span>`;
+const freqBar = (f) => {
+  const color = f >= 85 ? "var(--ok)" : f >= CONFIG.frequenciaMinima ? "var(--warn)" : "var(--bad)";
+  return `${f.toFixed(0)}%<div class="bar"><span style="width:${Math.min(f, 100)}%;background:${color}"></span></div>`;
+};
+const tabela = (head, rows) =>
+  `<div class="table-wrap"><table><thead><tr>${head.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
+
+function findSubjects(text, aluno) {
+  return aluno.disciplinas.filter((d) => {
+    const termos = [norm(d.nome), ...d.apelidos.map(norm)];
+    return termos.some((t) => new RegExp("\\b" + t + "\\b").test(text));
+  });
+}
+
+/* Identificação pelo nome */
+function findStudentsByName(raw) {
+  const n = norm(raw).replace(/^(oi|ola)\s+/, "").replace(/^(meu nome e|me chamo|eu sou|sou o|sou a|sou)\s+/, "");
+  if (!n) return [];
+  return Object.keys(DB).filter((ra) => {
+    const full = norm(DB[ra].nome);
+    return full === n || full.split(" ")[0] === n || full.startsWith(n + " ") || n.includes(full);
+  });
+}
+
+/* =========================================================
+   MOTOR LOCAL DE INTENÇÕES
+   ========================================================= */
+const state = { ra: null, pending: null, history: [], lastSubjects: [] };
+
+function localEngine(raw) {
+  const text = norm(raw);
+  const aluno = DB[state.ra];
+  let alvo = findSubjects(text, aluno);
+
+  if (!alvo.length && state.lastSubjects.length && has(text, ["nela", "dela", "nessa", "dessa", "essa", "e a", "e o"])) {
+    alvo = state.lastSubjects;
+  }
+  if (alvo.length) state.lastSubjects = alvo;
+  const lista = alvo.length ? alvo : aluno.disciplinas;
+  const escopo = alvo.length ? "" : " em todas as disciplinas";
+
+  if (has(text, ["ajuda", "help", "comandos", "o que voce faz", "o que posso"])) return helpText();
+
+  if (/^(oi|ola|bom dia|boa tarde|boa noite|e ai|opa)\b/.test(text) && text.split(" ").length <= 3) {
+    return `<p>Olá, ${esc(firstName(aluno.nome))}! Em que posso ajudar? Posso consultar suas notas, frequência, faltas ou situação nas disciplinas.</p>`;
+  }
+
+  if (has(text, ["obrigado", "obrigada", "valeu", "vlw"])) return `<p>Por nada! Se precisar de mais alguma coisa, é só perguntar.</p>`;
+
+  if (has(text, ["meu curso", "qual curso", "semestre", "meus dados", "quem sou", "meu nome", "periodo", "meu ra", "matricula"])) {
+    return `<p><b>${esc(aluno.nome)}</b> · RA ${esc(state.ra)}</p>
+      <p>Curso: <b>${esc(aluno.curso)}</b><br>Turma: <b>${esc(aluno.turma)}</b><br>Semestre: <b>${aluno.semestre}º</b> · Período: <b>${esc(aluno.periodo)}</b><br>
+      Disciplinas matriculadas: <b>${aluno.disciplinas.length}</b></p>`;
+  }
+
+  if (has(text, ["preciso", "precisa", "quanto tirar", "pra passar", "para passar", "tirar na p2"])) {
+    const pend = lista.filter((d) => d.p2 === null);
+    if (!pend.length) return `<p>Você não tem P2 pendente${alvo.length ? " nessa disciplina" : ""}. Todas as notas já foram lançadas.</p>`;
+    const linhas = pend.map((d) => {
+      const nec = CONFIG.mediaMinima * 2 - d.p1;
+      const txt = d.p1 === null ? `<span class="tag warn">Aguardando P1</span>` : nec > 10 ? `<span class="tag bad">Inviável (precisaria ${fmt(nec)})</span>`
+        : nec <= 0 ? `<span class="tag ok">Já garantida</span>` : `<b>${fmt(nec)}</b>`;
+      return `<tr><td>${esc(d.nome)}</td><td>${fmt(d.p1)}</td><td>${txt}</td></tr>`;
+    }).join("");
+    return `<p>Para chegar à média <b>${fmt(CONFIG.mediaMinima)}</b>, você precisa tirar na P2:</p>
+      ${tabela(["Disciplina", "P1", "P2 necessária"], linhas)}
+      <p>Lembre que também é preciso ter pelo menos ${CONFIG.frequenciaMinima}% de frequência.</p>`;
+  }
+
+  if (has(text, ["posso faltar", "ainda posso", "restam", "sobram", "faltas restantes", "limite de faltas", "quantas faltas posso"])) {
+    const linhas = lista.map((d) => {
+      const c = calc(d);
+      const r = c.restantes < 0 ? `<span class="tag bad">Limite estourado</span>`
+        : c.restantes <= 2 ? `<span class="tag warn">${c.restantes}</span>` : `<b>${c.restantes}</b>`;
+      return `<tr><td>${esc(d.nome)}</td><td>${d.faltas}/${c.limiteFaltas}</td><td>${r}</td></tr>`;
+    }).join("");
+    return `<p>Faltas que você ainda pode ter${escopo} (limite de ${100 - CONFIG.frequenciaMinima}% das aulas):</p>
+      ${tabela(["Disciplina", "Faltas / limite", "Restantes"], linhas)}`;
+  }
+
+  if (has(text, ["professor", "professora", "prof", "quem da", "quem ministra", "docente"])) {
+    return tabela(["Disciplina", "Docente"], lista.map((d) => `<tr><td>${esc(d.nome)}</td><td>${esc(d.prof)}</td></tr>`).join(""));
+  }
+
+  if (has(text, ["situacao", "aprovado", "aprovada", "reprovado", "reprovada", "passei", "status", "risco", "dp", "vou passar"])) {
+    const linhas = lista.map((d) => {
+      const c = calc(d);
+      return `<tr><td>${esc(d.nome)}</td><td>${fmt(c.media)}</td><td>${c.freq.toFixed(0)}%</td><td>${tag(c)}</td></tr>`;
+    }).join("");
+    const riscos = lista.filter((d) => calc(d).cls !== "ok");
+    const resumo = !riscos.length ? `<p>Tudo certo: você está aprovado${escopo}.</p>`
+      : `<p>Fique de olho em: <b>${riscos.map((d) => esc(d.nome)).join(", ")}</b>.</p>`;
+    return tabela(["Disciplina", "Média", "Freq.", "Situação"], linhas) + resumo;
+  }
+
+  if (has(text, ["frequencia", "falta", "faltas", "faltei", "presenca", "presencas"])) {
+    const linhas = lista.map((d) => `<tr><td>${esc(d.nome)}</td><td>${d.faltas}</td><td>${freqBar(calc(d).freq)}</td></tr>`).join("");
+    const total = lista.reduce((s, d) => s + d.faltas, 0);
+    return `<p>Sua frequência${escopo}:</p>${tabela(["Disciplina", "Faltas", "Frequência"], linhas)}
+      ${alvo.length ? "" : `<p>Total de faltas no semestre: <b>${total}</b>. Mínimo exigido: ${CONFIG.frequenciaMinima}%.</p>`}`;
+  }
+
+  if (has(text, ["nota", "notas", "p1", "p2", "media", "medias", "prova", "provas", "boletim", "desempenho", "cr", "coeficiente"])) {
+    return boletim(lista, alvo.length === 0);
+  }
+
+  if (alvo.length) return boletim(alvo, false);
+
+  if (has(text, ["resumo", "tudo", "geral", "semestre todo", "visao geral"])) return boletim(aluno.disciplinas, true);
+
+  return `<p>Não entendi bem. Você pode perguntar, por exemplo:</p>
+    <ul><li>"Qual minha nota em Banco de Dados?"</li><li>"Como está minha frequência?"</li><li>"Quanto preciso tirar na P2?"</li></ul>`;
+}
+
+function boletim(lista, geral) {
+  const linhas = lista.map((d) => {
+    const c = calc(d);
+    return `<tr><td>${esc(d.nome)}</td><td>${fmt(d.p1)}</td><td>${fmt(d.p2)}</td><td><b>${fmt(c.media)}</b></td><td>${c.freq.toFixed(0)}%</td><td>${tag(c)}</td></tr>`;
+  }).join("");
+  let extra = "";
+  if (geral) {
+    const fechadas = lista.map(calc).filter((c) => c.media !== null);
+    if (fechadas.length) {
+      const mg = fechadas.reduce((s, c) => s + c.media, 0) / fechadas.length;
+      extra = `<p>Média geral (disciplinas com P2 lançada): <b>${fmt(mg)}</b></p>`;
+    }
+  }
+  return tabela(["Disciplina", "P1", "P2", "Média", "Freq.", "Situação"], linhas) + extra;
+}
+
+function helpText() {
+  return `<p>Posso consultar seus dados acadêmicos. Experimente:</p>
+    <ul>
+      <li><b>Notas:</b> "minhas notas", "nota de web"</li>
+      <li><b>Frequência:</b> "minha frequência", "quantas faltas em BD"</li>
+      <li><b>Limite:</b> "quantas faltas ainda posso ter"</li>
+      <li><b>Situação:</b> "estou aprovado?", "em quais matérias estou em risco"</li>
+      <li><b>Metas:</b> "quanto preciso tirar na P2"</li>
+      <li><b>Outros:</b> "quem é o professor de IHC", "meus dados"</li>
+    </ul>`;
+}
+
+/* =========================================================
+   LLM OPCIONAL (backend)
+   ========================================================= */
+async function askLLM(message) {
+  if (!CONFIG.llmEndpoint) return null;
+  try {
+    const res = await fetch(CONFIG.llmEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ra: state.ra, message, history: state.history.slice(-10) })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.reply ? data.reply.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("") : null;
+  } catch (e) {
+    console.warn("LLM indisponível, usando motor local.", e);
+    return null;
+  }
+}
+
+/* =========================================================
+   INTERFACE
+   ========================================================= */
+function placeComposer(where) {
+  (where === "top" ? $("#topSlot") : $("#bottomSlot")).appendChild(composerEl);
+}
+
+function setWelcome(title, sub, placeholder, chips) {
+  document.body.classList.remove("chatting");
+  chatEl.innerHTML = "";
+  $("#welcomeTitle").textContent = title;
+  $("#welcomeSub").textContent = sub;
+  inputEl.placeholder = placeholder;
+  setChips(chips);
+  placeComposer("top");
+  inputEl.focus();
+}
+
+function startChatView() {
+  if (document.body.classList.contains("chatting")) return;
+  document.body.classList.add("chatting");
+  placeComposer("bottom");
+  inputEl.placeholder = "Responder...";
+}
+
+function addMessage(html, who) {
+  const el = document.createElement("div");
+  el.className = "msg " + who;
+  el.innerHTML = who === "bot"
+    ? `<div class="who"><i class="fa-solid fa-asterisk"></i></div><div class="content">${html}</div>`
+    : html;
+  chatEl.appendChild(el);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return el;
+}
+
+let verMaisCliques = 0;
+function setChips(list, paginar = false) {
+  chipsEl.innerHTML = "";
+  const passo = paginar ? Math.ceil(list.length / CONFIG.paginasNomes) : list.length;
+  const visiveis = list.slice(0, passo * (verMaisCliques + 1));
+  visiveis.forEach(([icon, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.innerHTML = `<i class="fa-solid ${icon}"></i>${esc(label)}`;
+    b.onclick = () => handleSend(label);
+    chipsEl.appendChild(b);
+  });
+  if (paginar && visiveis.length < list.length) {
+    const mais = document.createElement("button");
+    mais.type = "button";
+    mais.className = "chip ver-mais";
+    mais.innerHTML = `<i class="fa-solid fa-chevron-down"></i>Ver mais (${CONFIG.paginasNomes - 1 - verMaisCliques})`;
+    mais.onclick = () => { verMaisCliques++; setChips(list, true); };
+    chipsEl.appendChild(mais);
+  }
+}
+
+const CHIPS_ALUNO = [
+  ["fa-chart-simple", "Minhas notas"],
+  ["fa-calendar-check", "Minha frequência"],
+  ["fa-circle-check", "Estou aprovado?"],
+  ["fa-bullseye", "Quanto preciso na P2?"]
+];
+
+/* Etapa 1: pedir o nome */
+function askName() {
+  state.ra = null;
+  state.pending = null;
+  state.history = [];
+  state.lastSubjects = [];
+  verMaisCliques = 0;
+  $("#topActions").hidden = true;
+  setWelcome("Olá! Qual é o seu nome?", "Assim eu encontro suas informações acadêmicas.", "Digite seu nome...", []);
+  setChips(Object.values(DB).map((a) => ["fa-user", a.nome]).sort((a, b) => a[1].localeCompare(b[1])), true);
+}
+
+/* Etapa 2: tela "como posso ajudar" */
+function greet() {
+  carregarDados(); // pega chamadas e notas mais recentes do servidor
+  const aluno = DB[state.ra];
+  $("#userName").textContent = aluno.nome;
+  $("#topActions").hidden = false;
+  state.history = [];
+  state.lastSubjects = [];
+  setWelcome(`${saudacaoHora()}, ${firstName(aluno.nome)}`, "Como posso ajudar você hoje?", "Pergunte sobre notas, frequência, faltas...", CHIPS_ALUNO);
+}
+
+function identify(text) {
+  // escolha entre homônimos
+  if (state.pending) {
+    const escolhido = state.pending.find((ra) => norm(DB[ra].nome) === norm(text)) ||
+      findStudentsByName(text).find((ra) => state.pending.includes(ra));
+    if (escolhido) { state.ra = escolhido; state.pending = null; greet(); return; }
+  }
+  const hits = findStudentsByName(text);
+  if (hits.length === 1) { state.ra = hits[0]; greet(); return; }
+
+  if (hits.length > 1) {
+    state.pending = hits;
+    $("#welcomeTitle").textContent = "Encontrei mais de um aluno com esse nome";
+    $("#welcomeSub").textContent = "Qual deles é você?";
+    setChips(hits.map((ra) => ["fa-user", DB[ra].nome]));
+  } else {
+    $("#welcomeTitle").textContent = `Não encontrei "${text.trim()}"`;
+    $("#welcomeSub").textContent = "Digite seu nome como está no cadastro da FATEC.";
+  }
+  inputEl.focus();
+}
+
+let busy = false;
+async function handleSend(text) {
+  text = (text || inputEl.value).trim();
+  if (!text || busy) return;
+  inputEl.value = "";
+  autoResize();
+
+  if (!state.ra) { identify(text); return; }
+
+  busy = true;
+  updateSend();
+  startChatView();
+  addMessage(esc(text).replace(/\n/g, "<br>"), "user");
+  const typing = addMessage(`<span class="typing"><span></span><span></span><span></span></span>`, "bot");
+  await new Promise((r) => setTimeout(r, 450 + Math.random() * 350));
+
+  const reply = (await askLLM(text)) || localEngine(text);
+  state.history.push({ role: "user", content: text });
+
+  typing.remove();
+  addMessage(reply, "bot");
+  busy = false;
+  updateSend();
+  inputEl.focus();
+}
+
+function autoResize() {
+  inputEl.style.height = "auto";
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 200) + "px";
+  updateSend();
+}
+function updateSend() { sendEl.disabled = busy || !inputEl.value.trim(); }
+
+/* =========================================================
+   MODO PROFESSOR: chamada e notas por turma
+   Os dados ficam no servidor (server.js -> dados.json).
+   Se o servidor não responder, salva no navegador (localStorage).
+   ========================================================= */
+const DADOS = { chamadas: [], notas: {} };
+let modoServidor = false;
+let profPin = null;
+
+const hoje = () => new Date().toLocaleDateString("sv-SE"); // AAAA-MM-DD no fuso local
+const dataBR = (iso) => iso.split("-").reverse().join("/");
+
+async function api(caminho, { pin, ...opcoes } = {}) {
+  const res = await fetch(CONFIG.apiBase + caminho, {
+    ...opcoes,
+    headers: { "Content-Type": "application/json", "X-Prof-Pin": pin ?? profPin ?? "" }
+  });
+  const corpo = await res.json().catch(() => ({}));
+  if (!res.ok) { const e = new Error(corpo.erro || "Erro " + res.status); e.status = res.status; throw e; }
+  return corpo;
+}
+
+function lerLocal() { try { return JSON.parse(localStorage.getItem("fatec-dados")) || {}; } catch { return {}; } }
+function salvarLocal() { try { localStorage.setItem("fatec-dados", JSON.stringify(DADOS)); } catch {} }
+
+function usarDados(d) {
+  DADOS.chamadas = Array.isArray(d.chamadas) ? d.chamadas : [];
+  DADOS.notas = d.notas && typeof d.notas === "object" ? d.notas : {};
+  aplicarDados();
+}
+
+async function carregarDados() {
+  try { usarDados(await api("/api/dados")); modoServidor = true; }
+  catch { modoServidor = false; usarDados(lerLocal()); }
+}
+
+/* Recalcula faltas e notas de cada aluno a partir das chamadas e notas salvas */
+function aplicarDados() {
+  for (const [ra, a] of Object.entries(DB)) {
+    for (const d of a.disciplinas) {
+      const n = DADOS.notas[ra] && DADOS.notas[ra][d.nome];
+      d.p1 = n ? n.p1 : d.p1Base;
+      d.p2 = n ? n.p2 : d.p2Base;
+      d.faltas = d.faltasBase + DADOS.chamadas
+        .filter((c) => c.turma === a.turma && c.disciplina === d.nome && c.faltas.includes(ra))
+        .reduce((s, c) => s + c.aulas, 0);
+    }
+  }
+}
+
+/* Envia ao servidor; se ele estiver offline, aplica e salva localmente. Retorna true se foi ao servidor. */
+async function enviar(caminho, payload, aplicarLocal) {
+  if (modoServidor) {
+    try { usarDados(await api(caminho, { method: "POST", body: JSON.stringify(payload) })); return true; }
+    catch (e) { if (e.status) throw e; modoServidor = false; }
+  }
+  aplicarLocal();
+  salvarLocal();
+  aplicarDados();
+  return false;
+}
+
+function listarTurmas() {
+  const mapa = {};
+  for (const ra of Object.keys(DB)) (mapa[DB[ra].turma] ||= []).push(ra);
+  return Object.keys(mapa).sort().map((nome) => ({
+    nome,
+    ras: mapa[nome].sort((x, y) => DB[x].nome.localeCompare(DB[y].nome)),
+    disciplinas: DB[mapa[nome][0]].disciplinas.map((d) => d.nome)
+  }));
+}
+const turmaPorNome = (nome) => listarTurmas().find((t) => t.nome === nome);
+const discDe = (ra, nome) => DB[ra].disciplinas.find((d) => d.nome === nome);
+
+/* Navegação do painel */
+const painel = { modo: null, pilha: [] };
+function abrirPainel(modo) {
+  painel.modo = modo;
+  painel.pilha = [];
+  $("#painel").hidden = false;
+  irPara(profPin ? telaTurmas : telaLogin);
+}
+function fecharPainel() { $("#painel").hidden = true; }
+function irPara(fn, ...args) { painel.pilha.push([fn, args]); fn(...args); }
+function trocarTela(fn, ...args) { painel.pilha[painel.pilha.length - 1] = [fn, args]; fn(...args); }
+function voltar() {
+  painel.pilha.pop();
+  if (!painel.pilha.length) return fecharPainel();
+  const [fn, args] = painel.pilha[painel.pilha.length - 1];
+  fn(...args);
+}
+function renderPainel(titulo, sub, corpo, rodape = "") {
+  $("#painelTitulo").textContent = titulo;
+  $("#painelSub").textContent = sub;
+  $("#painelBody").innerHTML = corpo;
+  $("#painelFoot").innerHTML = rodape;
+  $("#painelFootWrap").hidden = !rodape;
+}
+const rotuloModo = () => (painel.modo === "notas" ? "Editar notas" : "Editar frequência");
+const statusServidor = () => (modoServidor ? "salvando no servidor" : "servidor offline · salvando só neste navegador");
+
+function toast(msg, tipo = "ok") {
+  document.querySelector(".toast")?.remove();
+  const el = document.createElement("div");
+  el.className = "toast " + tipo;
+  const ic = { ok: "fa-circle-check", warn: "fa-triangle-exclamation", bad: "fa-circle-xmark" }[tipo];
+  el.innerHTML = `<i class="fa-solid ${ic}"></i> ${esc(msg)}`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+/* Tela 0: PIN do professor */
+function telaLogin() {
+  renderPainel("Acesso do professor", rotuloModo(), `
+    <form class="login" id="loginForm">
+      <div class="spark"><i class="fa-solid fa-lock"></i></div>
+      <h3>Digite o PIN do professor</h3>
+      <p>Só professores podem alterar notas e frequência.</p>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN do professor" required>
+      <button class="primary" type="submit">Entrar</button>
+      <div class="erro-txt" id="pinErro"></div>
+    </form>`);
+  const input = $("#pinInput");
+  input.focus();
+  $("#loginForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const pin = input.value.trim();
+    const negar = () => { $("#pinErro").textContent = "PIN incorreto."; input.select(); };
+    try {
+      await api("/api/login", { method: "POST", pin });
+    } catch (err) {
+      if (err.status === 401) return negar();       // servidor respondeu: PIN errado
+      if (err.status) { $("#pinErro").textContent = err.message; return; } // ex.: banco não configurado
+      if (pin !== CONFIG.pinLocal) return negar();  // servidor offline: confere o PIN local
+    }
+    profPin = pin;
+    await carregarDados();
+    trocarTela(telaTurmas);
+  };
+}
+
+/* Tela 1: lista de turmas */
+function telaTurmas() {
+  const itens = listarTurmas().map((t) => `
+    <button class="opcao" type="button" data-turma="${esc(t.nome)}">
+      <span class="ic"><i class="fa-solid fa-users"></i></span>
+      <span class="txt"><b>${esc(t.nome)}</b><small>${t.ras.length} alunos · ${esc(DB[t.ras[0]].curso)}</small></span>
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>`).join("");
+  renderPainel(rotuloModo(), "Escolha a turma · " + statusServidor(), `<div class="opcoes">${itens}</div>`);
+  $("#painelBody").querySelectorAll("[data-turma]").forEach((b) => {
+    b.onclick = () => irPara(painel.modo === "notas" ? telaNotas : telaChamada, b.dataset.turma);
+  });
+}
+
+/* Tela 2a: chamada — cada aluno é um botão (verde = presente, vermelho = falta) */
+function telaChamada(turmaNome, disciplina, data) {
+  const t = turmaPorNome(turmaNome);
+  disciplina = disciplina || t.disciplinas[0];
+  data = data || hoje();
+  const id = `${turmaNome}|${disciplina}|${data}`;
+  const existente = DADOS.chamadas.find((c) => c.id === id);
+  const faltas = new Set(existente ? existente.faltas : []);
+  const aulasAtual = existente ? existente.aulas : 2;
+
+  renderPainel(turmaNome, "Chamada · " + statusServidor(), `
+    <div class="campos">
+      <label class="campo">Disciplina<select id="chDisc">${t.disciplinas.map((n) => `<option ${n === disciplina ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
+      <label class="campo">Data<input type="date" id="chData" value="${data}" max="${hoje()}"></label>
+      <label class="campo">Aulas no dia<select id="chAulas">${[1, 2, 3, 4].map((n) => `<option ${n === aulasAtual ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    </div>
+    <div class="aviso" ${existente ? "" : "hidden"}><i class="fa-solid fa-rotate"></i> Já existe chamada salva para ${dataBR(data)}. Ao salvar, ela será substituída.</div>
+    <div class="linha-acoes"><span>Toque no aluno para marcar falta</span><button class="ghost" type="button" id="chTodos">Todos presentes</button></div>
+    <div class="alunos-grid" id="chAlunos"></div>`,
+    `<span class="contagem" id="chContagem"></span><button class="primary" type="button" id="chSalvar">Salvar chamada</button>`);
+
+  const grid = $("#chAlunos");
+  const desenhar = () => {
+    grid.innerHTML = t.ras.map((ra) => {
+      const d = discDe(ra, disciplina);
+      const falta = faltas.has(ra);
+      return `<button type="button" class="aluno-btn ${falta ? "falta" : ""}" data-ra="${ra}" aria-pressed="${falta}">
+        <b>${esc(DB[ra].nome)}</b><span class="st">${falta ? "Falta" : "Presente"}</span>
+        <small>${d.faltas} faltas · ${calc(d).freq.toFixed(0)}% de frequência</small></button>`;
+    }).join("");
+    $("#chContagem").textContent = `${t.ras.length - faltas.size} presentes · ${faltas.size} faltas`;
+  };
+  desenhar();
+
+  grid.onclick = (e) => {
+    const b = e.target.closest("[data-ra]");
+    if (!b) return;
+    faltas.has(b.dataset.ra) ? faltas.delete(b.dataset.ra) : faltas.add(b.dataset.ra);
+    desenhar();
+  };
+  $("#chTodos").onclick = () => { faltas.clear(); desenhar(); };
+  const recarregar = () => trocarTela(telaChamada, turmaNome, $("#chDisc").value, $("#chData").value || hoje());
+  $("#chDisc").onchange = recarregar;
+  $("#chData").onchange = recarregar;
+
+  $("#chSalvar").onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    const ch = { id, turma: turmaNome, disciplina, data, aulas: Number($("#chAulas").value), faltas: [...faltas] };
+    try {
+      const noServidor = await enviar("/api/chamadas", ch, () => {
+        DADOS.chamadas = DADOS.chamadas.filter((c) => c.id !== id).concat(ch);
+      });
+      toast(noServidor ? `Chamada de ${dataBR(data)} salva no servidor` : "Servidor offline: chamada salva só neste navegador", noServidor ? "ok" : "warn");
+      trocarTela(telaChamada, turmaNome, disciplina, data);
+    } catch (e) {
+      toast(e.message, "bad");
+      btn.disabled = false;
+    }
+  };
+}
+
+/* Tela 2b: notas da turma */
+const lerNota = (s) => {
+  s = s.trim().replace(",", ".");
+  if (s === "") return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n >= 0 && n <= 10 ? Math.round(n * 10) / 10 : NaN;
+};
+
+function telaNotas(turmaNome, disciplina) {
+  const t = turmaPorNome(turmaNome);
+  disciplina = disciplina || t.disciplinas[0];
+  const val = (n) => (n === null || n === undefined ? "" : String(n).replace(".", ","));
+  const linhas = t.ras.map((ra) => {
+    const d = discDe(ra, disciplina);
+    const nome = esc(DB[ra].nome);
+    return `<tr data-ra="${ra}"><td>${nome}</td>
+      <td><input class="nota-in" inputmode="decimal" value="${val(d.p1)}" placeholder="--" aria-label="P1 de ${nome}"></td>
+      <td><input class="nota-in" inputmode="decimal" value="${val(d.p2)}" placeholder="--" aria-label="P2 de ${nome}"></td>
+      <td class="media"></td></tr>`;
+  }).join("");
+
+  renderPainel(turmaNome, "Notas · " + statusServidor(), `
+    <div class="campos um"><label class="campo">Disciplina<select id="ntDisc">${t.disciplinas.map((n) => `<option ${n === disciplina ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label></div>
+    <div class="linha-acoes"><span>Notas de 0 a 10 (vírgula ou ponto). Em branco = ainda não lançada.</span></div>
+    ${tabela(["Aluno", "P1", "P2", "Média"], linhas)}`,
+    `<span class="contagem">${t.ras.length} alunos</span><button class="primary" type="button" id="ntSalvar">Salvar notas</button>`);
+
+  const body = $("#painelBody");
+  const atualizar = (tr) => {
+    const [a, b] = [...tr.querySelectorAll(".nota-in")].map((i) => {
+      const v = lerNota(i.value);
+      i.classList.toggle("erro", Number.isNaN(v));
+      return v;
+    });
+    const ok = a !== null && b !== null && !Number.isNaN(a) && !Number.isNaN(b);
+    tr.querySelector(".media").innerHTML = ok ? `<b>${fmt((a + b) / 2)}</b>` : "--";
+  };
+  body.querySelectorAll("tr[data-ra]").forEach(atualizar);
+  body.oninput = (e) => { const tr = e.target.closest("tr[data-ra]"); if (tr) atualizar(tr); };
+  $("#ntDisc").onchange = () => trocarTela(telaNotas, turmaNome, $("#ntDisc").value);
+
+  $("#ntSalvar").onclick = async (ev) => {
+    const notas = {};
+    let invalida = false;
+    body.querySelectorAll("tr[data-ra]").forEach((tr) => {
+      const [p1, p2] = [...tr.querySelectorAll(".nota-in")].map((i) => lerNota(i.value));
+      if (Number.isNaN(p1) || Number.isNaN(p2)) invalida = true;
+      else notas[tr.dataset.ra] = { [disciplina]: { p1, p2 } };
+    });
+    if (invalida) return toast("Corrija as notas em vermelho (0 a 10).", "bad");
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    try {
+      const noServidor = await enviar("/api/notas", { notas }, () => {
+        for (const [ra, v] of Object.entries(notas)) DADOS.notas[ra] = { ...(DADOS.notas[ra] || {}), ...v };
+      });
+      toast(noServidor ? "Notas salvas no servidor" : "Servidor offline: notas salvas só neste navegador", noServidor ? "ok" : "warn");
+      trocarTela(telaNotas, turmaNome, disciplina);
+    } catch (e) {
+      toast(e.message, "bad");
+      btn.disabled = false;
+    }
+  };
+}
+
+$("#btnEditarNotas").addEventListener("click", () => abrirPainel("notas"));
+$("#btnEditarFreq").addEventListener("click", () => abrirPainel("frequencia"));
+$("#painelVoltar").addEventListener("click", voltar);
+$("#painelFechar").addEventListener("click", fecharPainel);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#painel").hidden) fecharPainel(); });
+
+inputEl.addEventListener("input", autoResize);
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+});
+sendEl.addEventListener("click", () => handleSend());
+$("#newChat").addEventListener("click", greet);
+$("#logout").addEventListener("click", askName);
+
+askName();
+carregarDados();
+</script>
+</body>
+</html>
